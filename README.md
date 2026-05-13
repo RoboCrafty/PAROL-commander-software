@@ -3,6 +3,16 @@
 [![License: MIT](https://img.shields.io/badge/license-GPLv3-blue)](https://opensource.org/license/gpl-3-0/)  ![Issues](https://img.shields.io/github/issues/PCrnjak/PAROL-commander-software) ![release](https://img.shields.io/github/v/release/PCrnjak/PAROL-commander-software) [![Powered by the Robotics Toolbox](https://raw.githubusercontent.com/petercorke/robotics-toolbox-python/master/.github/svg/rtb_powered.min.svg)](https://github.com/petercorke/robotics-toolbox-python)
 
 
+
+> [!CAUTION]
+> **Note 1:** Very experimental, I just wanted to explore what it would take for it to work with am esp32. Still has bugs probably you'd need to fix to gain full functionality. I am working on something else, might get back to this in future.
+> 
+> **Note 2:** I have removed can bus stuff, coz I was not using any gripper.
+
+
+
+
+
 <img src="Images/screen_2.png" alt="drawing" width="700"/>
 
 > [!CAUTION]
