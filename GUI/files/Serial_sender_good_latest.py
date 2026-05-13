@@ -57,8 +57,15 @@ if my_os == "Windows":
         ser = serial.Serial()
 elif my_os == "Linux":
     try:
-        str_port = '/dev/ttyACM' + str(STARTING_PORT)
+        str_port = '/dev/cu.usbserial-0001'
         ser = serial.Serial(port=str_port, baudrate=3000000, timeout=0)
+    except:
+        ser = serial.Serial()
+elif my_os == "Darwin": # macOS
+    try:
+        # Paste the exact port you found in Step 1 right here:
+        str_port = '/dev/cu.usbserial-0001' 
+        ser = serial.Serial(port=str_port, baudrate=921600, timeout=0)
     except:
         ser = serial.Serial()
 #ser.open()
@@ -453,7 +460,7 @@ def Task1(shared_string,Position_out,Speed_out,Command_out,Affected_joint_out,In
                             clean_string.append(code_string[i])
                     
                     print(clean_string)
-                    clean_string = [item.rstrip("\n") for item in clean_string] # Remove \n from all elements
+                    clean_string = [item.strip() for item in clean_string] # Strips ALL invisible whitespace 
                     clean_string_commands = clean_string
                     print(clean_string)
                     
@@ -2690,7 +2697,7 @@ if __name__ == '__main__':
     Jog_control = multiprocessing.Array("i",[0,0,0,0], lock=False) 
 
     # COM PORT, BAUD RATE, 
-    General_data =  multiprocessing.Array("i",[STARTING_PORT,3000000], lock=False) 
+    General_data =  multiprocessing.Array("i",[STARTING_PORT,921600], lock=False) 
 
     # Home,Enable,Disable,Clear error,Real_robot,Sim_robot, demo_app, program execution,
     Buttons =  multiprocessing.Array("i",[0,0,0,0,1,1,0,0,0], lock=False) 
@@ -2700,34 +2707,33 @@ if __name__ == '__main__':
 
     shared_string = multiprocessing.Array('c', b' ' * 100)  # Create a character array of size 100
 
-    # Process
+    # Process 1 handles the Serial Communication
     process1 = multiprocessing.Process(target=Main,args=[shared_string,Position_out,Speed_out,Command_out,Affected_joint_out,InOut_out,Timeout_out,Gripper_data_out,
          Position_in,Speed_in,Homed_in,InOut_in,Temperature_error_in,Position_error_in,Timeout_error,Timing_data_in,
          XTR_data,Gripper_data_in,
         Joint_jog_buttons,Cart_jog_buttons,Jog_control,General_data,Buttons,])
     
-    process2 = multiprocessing.Process(target=GUI_process,args=[shared_string,Position_out,Speed_out,Command_out,Affected_joint_out,InOut_out,Timeout_out,Gripper_data_out,
-         Position_in,Speed_in,Homed_in,InOut_in,Temperature_error_in,Position_error_in,Timeout_error,Timing_data_in,
-         XTR_data,Gripper_data_in,
-        Joint_jog_buttons,Cart_jog_buttons,Jog_control,General_data,Buttons,])
-    
+    # Process 3 handles the Simulator
+    # process3 = multiprocessing.Process(target=SIMULATOR_process,args =[Position_out,Position_in,Position_Sim,Buttons])
 
-    process3 = multiprocessing.Process(target=SIMULATOR_process,args =[Position_out,Position_in,Position_Sim,Buttons])
-
-
+    # Start the background tasks
     process1.start()
     time.sleep(1)
-    process2.start()
-    time.sleep(1)
-    process3.start()
-    process1.join()
-    process2.join()
-    process3.join()
+    # process3.start()
+    # time.sleep(1)
 
+    # CRITICAL macOS FIX: Run the GUI directly in the main thread!
+    # This will "block" here, keeping the window open until you click the X to close the app.
+    GUI_process(shared_string,Position_out,Speed_out,Command_out,Affected_joint_out,InOut_out,Timeout_out,Gripper_data_out,
+         Position_in,Speed_in,Homed_in,InOut_in,Temperature_error_in,Position_error_in,Timeout_error,Timing_data_in,
+         XTR_data,Gripper_data_in,
+        Joint_jog_buttons,Cart_jog_buttons,Jog_control,General_data,Buttons)
+
+    # Once you close the GUI window, the code moves here and cleans up the background tasks
     process1.terminate()
-    process2.terminate()
-    process3.terminate()
-
+    # process3.terminate()
+    process1.join()
+    # process3.join()
 
 
 
